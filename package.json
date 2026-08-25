@@ -8,5 +8,5 @@
     "typecheck": "pnpm -r --if-present typecheck"
   },
   "license": "ISC",
-  "packageManager": "pnpm@10.34.5"
+  "packageManager": "pnpm@11.23.0"
 }
