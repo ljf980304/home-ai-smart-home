@@ -1,13 +1,12 @@
 {
   "name": "home-ai-smart-home",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "家庭 AI 智能家居 monorepo",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "pnpm -r --parallel --if-present dev",
+    "build": "pnpm -r --if-present build",
+    "typecheck": "pnpm -r --if-present typecheck"
   },
-  "keywords": [],
-  "author": "",
   "license": "ISC",
   "packageManager": "pnpm@10.34.5"
 }

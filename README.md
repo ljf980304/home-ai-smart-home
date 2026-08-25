@@ -31,12 +31,19 @@ home-ai-smart-home/
 pnpm install
 
 # 2. 启动 dashboard 开发服务器
-pnpm --dir apps/dashboard dev
-# 或
-cd apps/dashboard && pnpm dev
+pnpm -F dashboard dev
 ```
 
 浏览器访问终端输出的本地地址（默认 http://localhost:5173）。
+
+> 根目录也配置了 `pnpm dev`（递归启动全部应用），单应用时效果等同，可按习惯任选。
+
+其他常用命令（均在根目录执行）：
+
+```bash
+pnpm build        # 构建全部应用
+pnpm typecheck    # 全仓库 TypeScript 类型检查
+```
 
 ## 开发状态
 
