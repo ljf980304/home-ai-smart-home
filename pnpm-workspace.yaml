@@ -1,3 +1,7 @@
 packages:
   - 'apps/*'
   - 'packages/*'
+
+# pnpm 供应链策略：最小发布时长（默认 1440 分钟 = 24 小时）。
+# 个人项目从官方源拉包，设为 0 关闭，避免刚发布的包被误拦。
+minimumReleaseAge: 0
