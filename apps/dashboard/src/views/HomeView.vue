@@ -27,7 +27,11 @@ onMounted(() => {
 function isControllable(d: Device) {
   return (
     d.online &&
-    (d.type === 'light' || d.type === 'switch' || d.type === 'plug' || d.type === 'air-conditioner')
+    (d.type === 'light' ||
+      d.type === 'switch' ||
+      d.type === 'plug' ||
+      d.type === 'air-conditioner' ||
+      d.type === 'fan')
   )
 }
 

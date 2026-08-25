@@ -1,46 +1,52 @@
 <script setup lang="ts">
-import { onMounted } from 'vue'
-import {
-  NAlert,
-  NButton,
-  NCard,
-  NEmpty,
-  NSlider,
-  NSpace,
-  NSpin,
-  NSwitch,
-  NTag,
-} from 'naive-ui'
+import { computed, onMounted, ref } from 'vue'
+import { NAlert, NButton, NCard, NEmpty, NRadioButton, NRadioGroup, NSlider, NSpin, NSwitch, NTag } from 'naive-ui'
+import DeviceControlModal from '@/components/DeviceControlModal.vue'
 import { useDeviceStore } from '@/stores/deviceStore'
-import { DEVICE_TYPE_LABELS, type Device, type DeviceType } from '@/types/device'
+import { DEVICE_TYPE_LABELS, type Device } from '@/types/device'
+import {
+  applyControl,
+  applySlider,
+  controlValue,
+  DEVICE_CONTROLS,
+  sliderValue,
+  TAG_TYPE,
+  type ControlSpec,
+} from '@/views/deviceUi'
 
 const store = useDeviceStore()
 
-const TAG_TYPE: Partial<Record<DeviceType, 'default' | 'info' | 'success' | 'warning' | 'error'>> = {
-  light: 'warning',
-  switch: 'info',
-  'air-conditioner': 'success',
-  curtain: 'default',
-  sensor: 'info',
-  plug: 'default',
+/** 当前打开完整控制弹窗的设备 */
+const detailDevice = ref<Device | null>(null)
+const detailShow = computed({
+  get: () => detailDevice.value !== null,
+  set: (v: boolean) => {
+    if (!v) detailDevice.value = null
+  },
+})
+
+function openDetail(device: Device) {
+  detailDevice.value = device
+}
+
+/** 卡片默认显示的控件（前 4 个） */
+function visibleControls(d: Device) {
+  return DEVICE_CONTROLS[d.type].slice(0, 4)
+}
+
+/** 总控件数超过 4 时才需要「···」更多 */
+function hasMore(d: Device) {
+  return DEVICE_CONTROLS[d.type].length > 4
+}
+
+/** 滑块拖拽结束，持久化数值 */
+function onSliderChange(device: Device, c: ControlSpec, value: number | number[]) {
+  applyControl(device, c, Array.isArray(value) ? (value[0] ?? 0) : value)
 }
 
 onMounted(() => {
   store.fetchDevices()
 })
-
-/** n-slider 的单值 value 类型可能是 number | number[]，统一转成 number */
-function asNumber(value: number | number[]): number {
-  return Array.isArray(value) ? (value[0] ?? 0) : value
-}
-
-function onBrightnessChange(device: Device, value: number | number[]) {
-  void store.setBrightness(device.id, asNumber(value))
-}
-
-function onColorTempChange(device: Device, value: number | number[]) {
-  void store.setColorTemp(device.id, asNumber(value))
-}
 </script>
 
 <template>
@@ -69,63 +75,69 @@ function onColorTempChange(device: Device, value: number | number[]) {
           :key="device.id"
           class="device-card"
           :class="{ offline: !device.online }"
-          :title="device.name"
         >
-          <template #header-extra>
-            <n-space size="small" align="center">
-              <n-tag size="small" :type="TAG_TYPE[device.type] ?? 'default'">
-                {{ DEVICE_TYPE_LABELS[device.type] }}
-              </n-tag>
-              <n-tag size="small" :type="device.online ? 'success' : 'default'">
-                {{ device.online ? '在线' : '离线' }}
-              </n-tag>
-            </n-space>
-          </template>
-
-          <p class="room">{{ device.room }}</p>
-
-          <template v-if="device.online">
-            <div class="control-row">
-              <span class="control-label">电源</span>
-              <n-switch
-                :value="device.power"
-                size="medium"
-                @update:value="store.togglePower(device.id)"
-              />
+          <div class="card-inner">
+            <!-- 顶部行：设备名称 + 标签（右对齐） -->
+            <div class="card-header">
+              <span class="device-name">{{ device.name }}</span>
+              <div class="header-tags">
+                <n-tag size="small" :type="TAG_TYPE[device.type] ?? 'default'">
+                  {{ DEVICE_TYPE_LABELS[device.type] }}
+                </n-tag>
+                <n-tag size="small" :type="device.online ? 'success' : 'default'">
+                  {{ device.online ? '在线' : '离线' }}
+                </n-tag>
+              </div>
             </div>
 
-            <div v-if="typeof device.brightness === 'number'" class="control-row">
-              <span class="control-label">亮度 {{ device.brightness }}</span>
-              <n-slider
-                v-model:value="device.brightness"
-                :min="0"
-                :max="100"
-                :step="1"
-                @change="onBrightnessChange(device, $event)"
-              />
+            <!-- 第二行：房间（左对齐） -->
+            <div class="card-room">{{ device.room }}</div>
+
+            <!-- 核心操作区：每行一个控件，默认显示前 4 个 -->
+            <div class="core-ops">
+              <template v-if="device.online">
+                <div v-for="c in visibleControls(device)" :key="c.key" class="core-item">
+                  <span class="core-item-name">{{ c.label }}</span>
+                  <n-switch
+                    v-if="c.kind === 'switch'"
+                    :value="controlValue(device, c)"
+                    size="small"
+                    @update:value="applyControl(device, c, $event)"
+                  />
+                  <n-radio-group
+                    v-else-if="c.kind === 'radio'"
+                    size="small"
+                    :value="controlValue(device, c)"
+                    @update:value="applyControl(device, c, $event)"
+                  >
+                    <n-radio-button v-for="o in c.options" :key="o.value" :value="o.value">
+                      {{ o.label }}
+                    </n-radio-button>
+                  </n-radio-group>
+                  <n-slider
+                    v-else
+                    :value="sliderValue(device, c)"
+                    :min="c.min"
+                    :max="c.max"
+                    :step="c.step"
+                    @update:value="applySlider(device, c, $event)"
+                    @change="onSliderChange(device, c, $event)"
+                  />
+                </div>
+              </template>
+              <span v-else class="muted">设备离线</span>
             </div>
 
-            <div v-if="typeof device.colorTemp === 'number'" class="control-row">
-              <span class="control-label">色温 {{ device.colorTemp }}K</span>
-              <n-slider
-                v-model:value="device.colorTemp"
-                :min="2700"
-                :max="6500"
-                :step="100"
-                @change="onColorTempChange(device, $event)"
-              />
+            <!-- 右下角：总控件数超过 4 个才显示「···」 -->
+            <div v-if="hasMore(device)" class="more-btn">
+              <n-button size="tiny" quaternary @click="openDetail(device)">···</n-button>
             </div>
-
-            <div v-if="typeof device.temperature === 'number'" class="control-row">
-              <span class="control-label">温度</span>
-              <span class="muted">{{ device.temperature }}℃</span>
-            </div>
-          </template>
-
-          <p v-else class="muted">设备离线，无法控制</p>
+          </div>
         </n-card>
       </div>
     </n-spin>
+
+    <DeviceControlModal v-model:show="detailShow" :device="detailDevice" />
   </div>
 </template>
 
@@ -151,30 +163,83 @@ function onColorTempChange(device: Device, value: number | number[]) {
   gap: 16px;
 }
 
+/* 所有设备卡片固定高度一致 */
+.device-card {
+  height: 224px;
+}
+
 .device-card.offline {
   opacity: 0.6;
 }
 
-.room {
-  color: var(--text-muted);
-  font-size: 13px;
-  margin-bottom: 12px;
+.device-card :deep(.n-card__content) {
+  height: 100%;
+  padding: 14px 20px;
 }
 
-.control-row {
+.card-inner {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.card-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
-  padding: 6px 0;
+  gap: 8px;
 }
 
-.control-row .n-slider {
+.device-name {
+  font-size: 15px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.header-tags {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.card-room {
+  color: var(--text-muted);
+  font-size: 13px;
+  margin-top: 4px;
+}
+
+.core-ops {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 8px;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.core-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.core-item .n-slider {
   flex: 1;
 }
 
-.control-label {
-  flex-shrink: 0;
-  font-size: 14px;
+.core-item-name {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.more-btn {
+  display: flex;
+  justify-content: center;
+  margin-top: auto;
+  line-height: 1;
 }
 </style>

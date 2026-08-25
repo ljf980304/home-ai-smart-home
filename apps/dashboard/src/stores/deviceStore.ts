@@ -1,7 +1,7 @@
 import { computed, ref } from 'vue'
 import { defineStore } from 'pinia'
 import * as deviceService from '@/services/deviceService'
-import type { Device, DeviceType } from '@/types/device'
+import type { Device, DeviceType, FanState } from '@/types/device'
 
 export const useDeviceStore = defineStore('device', () => {
   const devices = ref<Device[]>([])
@@ -83,6 +83,32 @@ export const useDeviceStore = defineStore('device', () => {
     }
   }
 
+  /** 空调温度持久化，同 setBrightness。 */
+  async function setTemperature(id: string, value: number) {
+    try {
+      await deviceService.setTemperature(id, value)
+    } catch (e) {
+      error.value = e instanceof Error ? e.message : '设置温度失败'
+    }
+  }
+
+  /**
+   * 风扇状态更新（挡位 / 模式 / 摇头 / 定时）。
+   * 乐观更新：先生效，失败回滚；仅作用于在线的风扇设备。
+   */
+  async function updateFanState(id: string, patch: Partial<FanState>) {
+    const device = devices.value.find((d) => d.id === id)
+    if (!device || device.type !== 'fan' || !device.online) return
+    const prev = { ...device.state }
+    Object.assign(device.state, patch)
+    try {
+      await deviceService.setFanState(id, patch)
+    } catch (e) {
+      Object.assign(device.state, prev)
+      error.value = e instanceof Error ? e.message : '风扇控制失败'
+    }
+  }
+
   return {
     devices,
     loading,
@@ -95,5 +121,7 @@ export const useDeviceStore = defineStore('device', () => {
     togglePower,
     setBrightness,
     setColorTemp,
+    setTemperature,
+    updateFanState,
   }
 })
