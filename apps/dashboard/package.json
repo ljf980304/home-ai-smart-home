@@ -10,7 +10,8 @@
     "typecheck": "vue-tsc -b"
   },
   "dependencies": {
-    "vue": "^3.5.41"
+    "vue": "^3.5.41",
+    "vue-router": "^5.2.0"
   },
   "devDependencies": {
     "@types/node": "^24.13.3",

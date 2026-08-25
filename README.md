@@ -21,8 +21,10 @@ home-ai-smart-home/
 | 层 | 技术 |
 |---|---|
 | 前端 | Vue 3（`<script setup>`）+ TypeScript |
+| 路由 | Vue Router 4 |
 | 构建 | Vite 8 |
 | 包管理 | pnpm（workspace monorepo） |
+| 代码检查 | ESLint 10（flat config） |
 
 ## 快速开始
 
@@ -43,12 +45,13 @@ pnpm -F dashboard dev
 ```bash
 pnpm build        # 构建全部应用
 pnpm typecheck    # 全仓库 TypeScript 类型检查
+pnpm lint         # 全仓库 ESLint 检查
 ```
 
 ## 开发状态
 
 - [x] monorepo 脚手架初始化
-- [ ] dashboard 页面骨架（路由、布局）
+- [x] dashboard 页面骨架（路由、布局、占位视图）
 - [ ] 智能家居设备接入（灯光、温控、安防等）
 - [ ] AI 对话/场景控制能力
 - [ ] packages 共享包拆分
