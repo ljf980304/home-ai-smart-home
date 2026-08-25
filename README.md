@@ -22,9 +22,18 @@ home-ai-smart-home/
 |---|---|
 | 前端 | Vue 3（`<script setup>`）+ TypeScript |
 | 路由 | Vue Router 4 |
+| UI | Naive UI |
+| 状态管理 | Pinia |
 | 构建 | Vite 8 |
 | 包管理 | pnpm（workspace monorepo） |
 | 代码检查 | ESLint 10（flat config） |
+
+## 数据与接口
+
+- 前端请求统一走 `/api` 前缀，由 vite proxy 转发到接口服务（当前为 **APIfox mock**）
+- 接口契约见 [docs/api/接口清单.md](docs/api/接口清单.md)，也是后续 Express + SQLite 后端的实现依据
+- mock 地址默认 `http://127.0.0.1:4523`，可用环境变量覆盖：
+  `VITE_API_PROXY_TARGET=http://localhost:3000 pnpm -F dashboard dev`
 
 ## 快速开始
 
@@ -52,8 +61,9 @@ pnpm lint         # 全仓库 ESLint 检查
 
 - [x] monorepo 脚手架初始化
 - [x] dashboard 页面骨架（路由、布局、占位视图）
-- [ ] 智能家居设备接入（灯光、温控、安防等）
-- [ ] AI 对话/场景控制能力
+- [x] 前端业务骨架（设备管理 / 总览 / 场景管理，数据走 APIfox mock）
+- [ ] 智能家居设备接入（米家 / 华为 / Matter 硬件适配层）
+- [ ] AI 对话 / 场景控制能力
 - [ ] packages 共享包拆分
 
 ## 许可证

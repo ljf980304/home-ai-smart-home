@@ -32,6 +32,7 @@ export default tseslint.config(
       'vue/no-v-html': 'off', // 智能家居面板可能需要渲染富文本 / HTML 内容
       'vue/max-attributes-per-line': 'off',
       'vue/html-self-closing': 'off',
+      'vue/singleline-html-element-content-newline': 'off', // 短内容保持单行（如按钮文字）
     },
   },
 )
