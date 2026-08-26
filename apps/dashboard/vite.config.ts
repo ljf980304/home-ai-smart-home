@@ -7,8 +7,7 @@ import { defineConfig, loadEnv } from 'vite'
 export default defineConfig(({ mode }) => {
   // 读取 .env / .env.local 中的 VITE_API_PROXY_TARGET
   const env = loadEnv(mode, process.cwd(), '')
-  const apiProxyTarget =
-    env.VITE_API_PROXY_TARGET || 'http://127.0.0.1:4523' // 默认 APIfox 本地 Mock
+  const apiProxyTarget = env.VITE_API_PROXY_TARGET || 'http://127.0.0.1:3001' // 默认本地后端（apps/server）
 
   return {
     plugins: [vue()],

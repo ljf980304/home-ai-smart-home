@@ -17,6 +17,12 @@ dist
 dist-ssr
 *.local
 
+# Local runtime data (SQLite)
+apps/server/data/
+
+# 一次性工具（米家 token 提取等，涉及账号凭据）
+tools/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

@@ -4,6 +4,8 @@
   "description": "家庭 AI 智能家居 monorepo",
   "scripts": {
     "dev": "pnpm -r --parallel --if-present dev",
+    "dev:web": "pnpm -F dashboard dev",
+    "dev:server": "pnpm -F server dev",
     "build": "pnpm -r --if-present build",
     "typecheck": "pnpm -r --if-present typecheck",
     "lint": "eslint ."
