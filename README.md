@@ -42,6 +42,8 @@ home-ai-smart-home/
 
 ## 快速开始
 
+> **环境要求：Node ≥ 22.5（推荐 24 LTS）** —— 后端使用 Node 内置的 `node:sqlite`（22.5+ 引入），版本过低会启动失败。安装依赖时 pnpm 也会按根目录 `engines` 校验版本。
+
 ```bash
 # 1. 安装依赖（在仓库根目录）
 pnpm install
