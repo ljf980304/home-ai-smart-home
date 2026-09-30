@@ -1,0 +1,4 @@
+# Vue Router 用的是 history 模式（createWebHistory），
+# 直接访问 /devices、/scenes 这类子路径时要回退到 index.html，否则刷新即 404。
+# 仅静态托管（Netlify）会读这个文件；本地 dev / preview 不走它。
+/*    /index.html   200

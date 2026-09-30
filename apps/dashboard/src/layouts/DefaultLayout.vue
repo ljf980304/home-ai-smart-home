@@ -1,8 +1,12 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { RouterLink, RouterView, useRoute } from 'vue-router'
+import { isDemoMode } from '@/services/demo'
 
 const route = useRoute()
+
+/** 演示站的源码仓库，提示条里给个回跳入口 */
+const REPO_URL = 'https://github.com/ljf980304/home-ai-smart-home'
 
 const navItems = [
   { to: '/', label: '总览' },
@@ -40,6 +44,12 @@ function isActive(path: string) {
     </aside>
 
     <div class="main">
+      <div v-if="isDemoMode" class="demo-banner">
+        <strong>静态演示数据</strong>
+        <span>后端未连接，操作只存在于本次浏览、刷新即重置</span>
+        <a :href="REPO_URL" target="_blank" rel="noopener">源码仓库</a>
+      </div>
+
       <header class="header">
         <h1>{{ pageTitle }}</h1>
       </header>
@@ -121,6 +131,38 @@ function isActive(path: string) {
   flex-direction: column;
 }
 
+/* 演示模式提示条：只有 VITE_DEMO=true 的构建才渲染 */
+.demo-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 10px;
+  padding: 10px 28px;
+  background: #fff7e6;
+  border-bottom: 1px solid #ffd591;
+  color: #874d00;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.demo-banner strong {
+  font-weight: 600;
+}
+
+.demo-banner a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+@media (prefers-color-scheme: dark) {
+  .demo-banner {
+    background: #2b2113;
+    border-bottom-color: #5c4318;
+    color: #ffd591;
+  }
+}
+
 .header {
   padding: 20px 28px;
   background: var(--surface);
@@ -159,6 +201,10 @@ function isActive(path: string) {
   .nav {
     flex-direction: row;
     gap: 8px;
+  }
+
+  .demo-banner {
+    padding: 10px 20px;
   }
 
   .header {

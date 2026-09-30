@@ -1,16 +1,14 @@
+import { ApiError } from './apiError'
+import { demoRequest, isDemoMode } from './demo'
+
+export { ApiError }
+
 const BASE_URL = '/api'
 
-export class ApiError extends Error {
-  status: number
-
-  constructor(status: number, message: string) {
-    super(message)
-    this.name = 'ApiError'
-    this.status = status
-  }
-}
-
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
+  // 演示模式：不连后端，改走内存 fixture（见 demo.ts）
+  if (isDemoMode) return demoRequest<T>(path, options)
+
   let res: Response
   try {
     res = await fetch(`${BASE_URL}${path}`, {
@@ -18,7 +16,7 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
       ...options,
     })
   } catch {
-    // 网络层失败（如 mock 服务未启动）
+    // 网络层失败（如后端未启动）
     throw new ApiError(0, '网络异常，请确认接口服务已启动')
   }
 
@@ -26,7 +24,7 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
     throw new ApiError(res.status, `请求失败（${res.status} ${res.statusText}）`)
   }
 
-  // 兼容空响应体（200 + 无 body，如 APIfox mock 的 PATCH 控制接口）
+  // 兼容空响应体（如 DELETE 返回 204、PATCH 无 body）
   const text = await res.text()
   return (text ? JSON.parse(text) : undefined) as T
 }
