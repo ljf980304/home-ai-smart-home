@@ -69,6 +69,27 @@ pnpm typecheck    # 全仓库 TypeScript 类型检查
 pnpm lint         # 全仓库 ESLint 检查
 ```
 
+## 静态演示模式
+
+后端是 Express + SQLite，纯静态托管跑不起来，控制面板就没法做成在线预览。
+
+解法是在前端加一层内存 fixture：构建时带 `--mode demo`，`http.ts` 这个唯一出口
+改走 `demo.ts`，完全不发网络请求。数据只存在内存里，**刷新即重置**。
+
+```bash
+pnpm -F dashboard build:demo     # 产物在 apps/dashboard/dist
+pnpm -F dashboard preview        # 本地预览
+```
+
+演示逻辑集中在一个文件里（`apps/dashboard/src/services/demo.ts`），行为对齐
+`apps/server`：状态字段按白名单合并、场景列表按 `createdAt` 升序、错误码与文案
+一致。改动后端接口时记得同步它。
+
+页面顶部会显示一条「静态演示数据」提示条，避免被误当成真实产品。
+
+> 静态托管如果用的是 history 路由，需要 `public/_redirects` 把子路径回退到
+> `index.html`，否则直接访问 `/devices` 或刷新页面会 404。
+
 ## 开发状态
 
 - [x] monorepo 脚手架初始化
